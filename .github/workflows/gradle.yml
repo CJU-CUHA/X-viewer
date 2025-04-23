@@ -1,0 +1,100 @@
+name: Spring Boot with Gradle Deployment
+
+on:
+  push:
+    branches: ["main"]
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 코드 체크아웃
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 2. JDK 21 설정 (Docker Compose에서 openjdk:21을 사용 중이므로 버전 맞춤)
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          java-version: "21"
+          distribution: "temurin"
+          cache: gradle
+
+      # 3. 비밀 설정 파일 가져오기 (application.properties)
+      - name: Import secrets
+        run: |
+          mkdir -p ./src/main/resources
+          echo "${{ secrets.APPLICATION_PROPERTIES }}" > ./src/main/resources/application.properties
+        shell: bash
+
+      # # 4. Gradle을 사용하여 프로젝트 빌드
+      # - name: Build with Gradle
+      #   run: |
+      #     cd BE
+      #     chmod +x gradlew
+      #     ./gradlew build -x test --no-daemon
+
+      # 5. SSH 에이전트 설정
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.5.4
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      # 6. 원격 서버를 known_hosts에 추가하여 호스트 검증 우회
+      - name: Add remote server to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -p ${{ secrets.SERVER_PORT }} ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+
+      # #7. 빌드된 JAR 파일을 SCP를 통해 원격 서버로 전송
+      # - name: Transfer built jar via SCP
+      #   run: |
+      #     scp -v -O -P ${{ secrets.SERVER_PORT }} BE/build/libs/*.jar ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }}:~/enjiso/deploy/beyoung/build
+
+      # # 7. 빌드된 JAR 파일을 Rsync를 통해 원격 서버로 전송
+      # - name: Transfer built jar via Rsync
+      #   run: |
+      #     rsync -avz --progress -e "ssh -p ${{ secrets.SERVER_PORT }}" BE/build/libs/*.jar ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }}:~/enjiso/deploy/beyoung/build
+      #   shell: bash
+
+      #  # 7. 빌드된 JAR 파일을 Rsync를 통해 원격 서버로 전송
+      # - name: Transfer built jar via Rsync
+      #   run: |
+      #     echo "📂 현재 빌드된 파일 목록:"
+      #     ls -lh BE/build/libs/
+
+      #     echo "🚀 Rsync로 JAR 파일 전송 중..."
+      #     rsync -avz --progress --partial --bwlimit=0 -e "ssh -o ServerAliveInterval=60 -p ${{ secrets.SERVER_PORT }}" BE/build/libs/*.jar ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }}:~/enjiso/deploy/beyoung/build
+
+      #   shell: bash
+
+      # 8. 원격 서버에서 Docker Compose를 사용하여 애플리케이션 재시작
+      - name: Execute remote commands
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SERVER_PORT }}
+          script: |
+              # 프로젝트 디렉토리로 이동 후 git pull
+              cd /home/***/X-viewer
+              git checkout main
+              git pull origin main
+              cd BE
+              # Gradle 빌드 설정
+              chmod +x gradlew
+              ./gradlew build --no-daemon
+
+              # JAR 파일 이름 변경
+              mv ~/X-viewer/BE/build/libs/X-viewer-0.0.1-SNAPSHOT.jar ~/BE/build/libs/app.jar
+
+              # Docker Compose로 애플리케이션 재시작
+              cd ~/X-viewer
+              sudo docker-compose down
+              sudo docker-compose build --no-cache
+              sudo docker-compose up -d
