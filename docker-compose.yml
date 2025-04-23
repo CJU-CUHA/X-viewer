@@ -1,0 +1,59 @@
+version: "3.3"
+
+services:
+  app:
+    container_name: X-viewer-backend
+    image: openjdk:21
+    volumes:
+      - ./BE/build/libs:/root
+    ports:
+      - "10030:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/cuha
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=cuhazngk
+      - SPRING_DATA_MONGODB_URI=mongodb://root:cuhazngk@mongo:27017/admin
+    command: sh -c "java -jar /root/app.jar"
+    restart: unless-stopped
+    depends_on:
+      - mysql
+      - mongo
+    networks:
+      - app-network
+
+  mysql:
+    container_name: X-viewer-mysql
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: cuhazngk
+      MYSQL_DATABASE: cuha
+      MYSQL_INITDB_SKIP_TZINFO: "yes"
+      INNODB_FORCE_RECOVERY: 1
+      LANG: C.UTF-8
+      MYSQL_CHARSET: utf8mb4
+      MYSQL_COLLATION: utf8mb4_unicode_ci
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+    restart: unless-stopped
+    ports:
+      - "3309:3306"
+    networks:
+      - app-network
+
+  mongo:
+    container_name: X-viewer-mongo
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: cuhazngk
+    volumes:
+      - ./mongo-data:/data/db
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
