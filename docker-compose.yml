@@ -20,7 +20,22 @@ services:
       - mongo
     networks:
       - app-network
-
+  flask:
+    container_name: X-viewer-flask
+    build:
+      context: ./evtx_python  # Flask가 있는 디렉토리
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=development
+    volumes:
+      - ./evtx_python:/app
+    depends_on:
+      - mysql
+      - mongo
+    networks:
+      - app-network
+    command: flask run --host=0.0.0.0 --port=5000
   mysql:
     container_name: X-viewer-mysql
     image: mysql:8.0
