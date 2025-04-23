@@ -91,7 +91,7 @@ jobs:
               ./gradlew build --no-daemon
 
               # JAR 파일 이름 변경
-              mv ~/BE/build/libs/BE-0.0.1-SNAPSHOT.jar ~/BE/build/libs/app.jar
+              mv ~/X-viewer/BE/build/libs/BE-0.0.1-SNAPSHOT.jar ~/BE/build/libs/app.jar
 
               # Docker Compose로 애플리케이션 재시작
               cd ~/X-viewer
