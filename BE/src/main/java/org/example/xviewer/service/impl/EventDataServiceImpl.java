@@ -35,7 +35,7 @@ public class EventDataServiceImpl implements EventDataService {
 
     @Override
     public EventData findEventData(String eventId) {
-        return eventDataRepository.findEventData(eventId);
+        return eventDataRepository.findByEventData(eventId);
     }
 
     @Override
@@ -43,9 +43,10 @@ public class EventDataServiceImpl implements EventDataService {
         List<Logs> logs=logsRepository.findAllByCaseId(caseId);
         List<EventData> eventDataList=new ArrayList<>();
         for (Logs log:logs) {
-            eventDataList.add(eventDataRepository.findEventData(log.getHash()));
+            eventDataList.add(eventDataRepository.findByEventData(log.getHash()));
         }
         return eventDataList;
     }
 
 }
+
