@@ -10,8 +10,6 @@ import org.example.xviewer.security.dto.logs.LogsResultResponse;
 import org.example.xviewer.service.LogsService;
 import org.springframework.stereotype.Service;
 
-import javax.management.AttributeNotFoundException;
-
 @Service
 @RequiredArgsConstructor
 public class LogsServiceImpl implements LogsService {
@@ -31,7 +29,7 @@ public class LogsServiceImpl implements LogsService {
                 .eventId(request.getEventId())
                 .channel(request.getChannel())
                 .computer(request.getComputer())
-                .caseId(caseRepository.getOne(request.getCaseId()))
+                .eventCasesId(caseRepository.getOne(request.getCaseId()))
                 .build();
         logsRepository.save(logs);
         resMessage.setMessage("저장에 성공했습니다.");

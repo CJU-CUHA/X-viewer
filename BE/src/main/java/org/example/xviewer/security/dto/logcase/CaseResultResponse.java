@@ -1,7 +1,7 @@
 package org.example.xviewer.security.dto.logcase;
 
 import lombok.*;
-import org.example.xviewer.model.Case;
+import org.example.xviewer.model.EventCases;
 
 import java.time.LocalDateTime;
 
@@ -18,13 +18,13 @@ public class CaseResultResponse {
     private String caseOwner;
     private LocalDateTime createdAt;
     // 엔티티를 DTO로 변환하는 정적 메서드 추가
-    public static CaseResultResponse fromEntity(Case caseEntity) {
+    public static CaseResultResponse fromEntity(EventCases eventCasesEntity) {
         return new CaseResultResponse(
-                caseEntity.getCaseName(),
-                caseEntity.getCaseInfo(),
-                caseEntity.getCaseType(),
-                caseEntity.getCaseOwner().getUsername(),
-                caseEntity.getCreated()
+                eventCasesEntity.getCaseName(),
+                eventCasesEntity.getCaseInfo(),
+                eventCasesEntity.getCaseType(),
+                eventCasesEntity.getCaseOwner().getUsername(),
+                eventCasesEntity.getCreated()
         );
     }
 }

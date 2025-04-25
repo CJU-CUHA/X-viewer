@@ -14,7 +14,7 @@ public class Logs extends TimeBaseEntity{
     private Long id;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "case_id")
-    private Case caseId;
+    private EventCases eventCasesId;
     private String alias;
     @Column(name = "event_id")
     private String eventId;
