@@ -7,7 +7,7 @@ services:
     volumes:
       - ./BE/build/libs:/root
     ports:
-      - "26666:8080"
+      - "10023:8080"
     environment:
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/cuha
       - SPRING_DATASOURCE_USERNAME=root
