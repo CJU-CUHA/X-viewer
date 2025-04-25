@@ -19,7 +19,6 @@ import java.util.List;
 public class EventDataServiceImpl implements EventDataService {
     private final EventDataRepository eventDataRepository;
     private final LogsRepository logsRepository;
-    private final EventCasesRepository eventCasesRepository;
     @Override
     public ResMessage createEventData(EventData eventData,String eventTime, String eventId) {
         EventData data=eventDataRepository.save(eventData);
@@ -44,7 +43,7 @@ public class EventDataServiceImpl implements EventDataService {
     @Override
     public List<EventData> findAllEventData(Long caseId) {
 
-        List<Logs> logs=logsRepository.findAllByCaseId(eventCasesRepository.findById(caseId).get());
+        List<Logs> logs=logsRepository.findAllByEventCasesId_Id(caseId);
         List<EventData> eventDataList=new ArrayList<>();
         for (Logs log:logs) {
             eventDataList.add(eventDataRepository.findByEventData(log.getHash()));
