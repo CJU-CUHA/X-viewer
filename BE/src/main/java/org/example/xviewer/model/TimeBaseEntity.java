@@ -14,6 +14,5 @@ import java.time.LocalDateTime;
 public abstract class TimeBaseEntity {
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime created;
 }
