@@ -47,13 +47,15 @@ public class CaseServiceImpl implements CaseService {
 
     @Override
     public Page<CaseResultResponse> getListCase(HttpServletRequest request) {
+        long startTime=System.currentTimeMillis();
         String username=jwtUtil.getUsername(request);
         if(!userRepository.findByUsername(username).isPresent()){
            throw new UsernameNotFoundException("404Not Found");
         }
         Pageable pageable = PageRequest.of(0, 10);
         Page<EventCases> casePage=caseRepository.findAllByCaseOwner_Id(userRepository.findByUsername(username).get().getId(),pageable);
-
+        long endTime=System.currentTimeMillis();
+        System.out.println("전체 로그 조사"+(endTime-startTime));
         // Case -> CaseDto 변환
         return casePage.map(CaseResultResponse::fromEntity);
     }
