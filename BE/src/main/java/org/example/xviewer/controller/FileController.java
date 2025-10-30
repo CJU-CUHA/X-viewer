@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.Time;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +27,7 @@ public class FileController {
     private final EventDataService eventDataService;
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ResMessage> uploadFile(@RequestBody MultipartFile file, @RequestParam Long CaseId, @RequestParam String pcName) throws IOException {
+        long startTime=System.currentTimeMillis();
         System.out.println("uploadFile");
         System.out.println("file = " + file.getOriginalFilename());
         // 예: src/main/resources/static/evtx
@@ -61,7 +63,8 @@ public class FileController {
 //            System.out.println("---------------------------------------------------");
         }
         ResMessage resMessage = new ResMessage();
-        resMessage.setMessage("File upload successful");
+        long endTime=System.currentTimeMillis();
+        resMessage.setMessage(endTime-startTime+"ms");
         return ResponseEntity.status(HttpStatus.OK).body(resMessage);
     }
 }
