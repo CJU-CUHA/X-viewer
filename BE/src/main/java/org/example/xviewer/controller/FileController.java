@@ -37,7 +37,7 @@ public class FileController {
         file.transferTo(destFile);
         RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<String> response = restTemplate.getForEntity(
-                "http://127.0.0.1:5000/?filename=" + file.getOriginalFilename(), String.class);
+                "http://X-viewer-flask:5000/?filename=" + file.getOriginalFilename(), String.class);
         if (response.getStatusCode() != HttpStatus.OK) {
             return ResponseEntity.status(HttpStatus.OK).body(new ResMessage("File upload failed"));
         }
