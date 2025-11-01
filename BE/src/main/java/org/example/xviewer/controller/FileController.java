@@ -46,7 +46,7 @@ public class FileController {
         // Flask에 GET 요청 (파일명 전달)
         RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<String> response = restTemplate.getForEntity(
-                "http://X-viewer-flask:5000/?filename=" + file.getOriginalFilename(), String.class);
+                "http://localhost:5000/?filename=" + file.getOriginalFilename(), String.class);
 
         if (response.getStatusCode() != HttpStatus.OK) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
