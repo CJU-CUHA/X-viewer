@@ -26,49 +26,52 @@ import java.util.Map;
 public class FileController {
     private final EventDataService eventDataService;
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ResMessage> uploadFile(@RequestBody MultipartFile file, @RequestParam Long CaseId, @RequestParam String pcName) throws IOException {
-        long startTime=System.currentTimeMillis();
-        System.out.println("uploadFile");
-        System.out.println("file = " + file.getOriginalFilename());
-        // 예: src/main/resources/static/evtx
-        String basePath = "static/evtx"; // 컨테이너 내부 경로
+    public ResponseEntity<ResMessage> uploadFile(
+            @RequestParam MultipartFile file,
+            @RequestParam Long CaseId,
+            @RequestParam String pcName) throws IOException {
+
+        long startTime = System.currentTimeMillis();
+
+        // 공유 폴더 경로
+        String basePath = "/app/static/evtx";
         File dir = new File(basePath);
         if (!dir.exists()) {
-            dir.mkdirs(); // 하위 폴더까지 생성
+            dir.mkdirs(); // 디렉토리 없으면 생성
         }
 
         File destFile = new File(dir, file.getOriginalFilename());
         file.transferTo(destFile);
+
+        // Flask에 GET 요청 (파일명 전달)
         RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<String> response = restTemplate.getForEntity(
                 "http://X-viewer-flask:5000/?filename=" + file.getOriginalFilename(), String.class);
+
         if (response.getStatusCode() != HttpStatus.OK) {
-            return ResponseEntity.status(HttpStatus.OK).body(new ResMessage("File upload failed"));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ResMessage("File upload failed"));
         }
 
-        //System.out.println("response.getBody() = " + response.getBody());
+        // JSON 파싱
         ObjectMapper mapper = new ObjectMapper();
-        List<Map<String, Object>> events = mapper.readValue(response.getBody(), new TypeReference<List<Map<String, Object>>>() {
-        });
+        List<Map<String, Object>> events = mapper.readValue(response.getBody(),
+                new TypeReference<List<Map<String, Object>>>() {});
 
         for (Map<String, Object> event : events) {
-            String eventId = (String)event.get("event_id");
+            String eventId = (String) event.get("event_id");
             String timeCreated = (String) event.get("time_created");
-
             List<Map<String, String>> summaryList = (List<Map<String, String>>) event.get("summary");
 
             EventData eventData = new EventData();
             eventData.setEventData(summaryList);
-            eventDataService.createEventData(eventData,timeCreated,eventId);
-//            System.out.println("Event ID: " + eventId);
-
-//            System.out.println("Time Created: " + timeCreated);
-//            System.out.println("Flattened Summary: " + summaryList);
-//            System.out.println("---------------------------------------------------");
+            eventDataService.createEventData(eventData, timeCreated, eventId);
         }
+
+        long endTime = System.currentTimeMillis();
         ResMessage resMessage = new ResMessage();
-        long endTime=System.currentTimeMillis();
-        resMessage.setMessage(endTime-startTime+"ms");
-        return ResponseEntity.status(HttpStatus.OK).body(resMessage);
+        resMessage.setMessage((endTime - startTime) + "ms");
+        return ResponseEntity.ok(resMessage);
     }
+
 }
