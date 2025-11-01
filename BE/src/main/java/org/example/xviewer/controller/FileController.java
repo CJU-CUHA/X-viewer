@@ -31,9 +31,13 @@ public class FileController {
         System.out.println("uploadFile");
         System.out.println("file = " + file.getOriginalFilename());
         // 예: src/main/resources/static/evtx
-        String basePath = new File("src/main/resources/static/evtx").getAbsolutePath();
-        File destFile = new File(basePath + "/" + file.getOriginalFilename());
+        String basePath = "static/evtx"; // 컨테이너 내부 경로
+        File dir = new File(basePath);
+        if (!dir.exists()) {
+            dir.mkdirs(); // 하위 폴더까지 생성
+        }
 
+        File destFile = new File(dir, file.getOriginalFilename());
         file.transferTo(destFile);
         RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<String> response = restTemplate.getForEntity(
